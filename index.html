@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PING WAR ROOM | Live Dashboard</title>
-    <meta name="description" content="PING Imperial War Room - Real-time system monitoring dashboard">
+    <title>PING 戰情室 | 即時儀表板</title>
+    <meta name="description" content="PING 帝國戰情室 - 即時系統監控儀表板">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🎯</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -147,10 +147,10 @@
 <body>
 
 <header>
-    <div class="logo">PING <span>WAR ROOM</span> <div class="refresh-dot live" id="refresh-dot"></div></div>
+    <div class="logo">PING <span>戰情室</span> <div class="refresh-dot live" id="refresh-dot"></div></div>
     <div style="text-align:right">
         <div id="live-clock">--:--:--</div>
-        <div id="live-date">Loading...</div>
+        <div id="live-date">載入中...</div>
         <div id="data-age"></div>
     </div>
 </header>
@@ -159,38 +159,38 @@
 
     <!-- A: VITALS -->
     <div class="panel">
-        <div class="pt">&#9672; <span>SYSTEM VITALS</span></div>
-        <div class="sr"><span class="sl">Disk (C:)</span><span class="sv ok" id="v-disk">-- GB FREE</span></div>
+        <div class="pt">&#9672; <span>系統生命徵象</span></div>
+        <div class="sr"><span class="sl">磁碟 (C:)</span><span class="sv ok" id="v-disk">-- GB 剩餘</span></div>
         <div class="bw"><div class="bf" id="v-disk-bar" style="width:0%;background:linear-gradient(90deg,#00ff73,#00c055)"></div></div>
-        <div class="sr"><span class="sl">n8n</span><span class="sv" id="v-n8n">--</span></div>
-        <div class="sr"><span class="sl">Docker</span><span class="sv" id="v-docker">--</span></div>
-        <div class="sr"><span class="sl">Branch</span><span class="sv" id="v-branch">--</span></div>
-        <div class="sr"><span class="sl">Git</span><span class="sv" id="v-gitstatus">--</span></div>
-        <div class="sr"><span class="sl">Sync</span><span class="sv" id="v-lastsync" style="color:var(--cyan)">--</span></div>
-        <div class="sr"><span class="sl">Pull</span><span class="sv" id="v-pull">--</span></div>
-        <div class="sr"><span class="sl">Push</span><span class="sv" id="v-push">--</span></div>
+        <div class="sr"><span class="sl">n8n 服務</span><span class="sv" id="v-n8n">--</span></div>
+        <div class="sr"><span class="sl">Docker 艦隊</span><span class="sv" id="v-docker">--</span></div>
+        <div class="sr"><span class="sl">分支</span><span class="sv" id="v-branch">--</span></div>
+        <div class="sr"><span class="sl">Git 狀態</span><span class="sv" id="v-gitstatus">--</span></div>
+        <div class="sr"><span class="sl">最後同步</span><span class="sv" id="v-lastsync" style="color:var(--cyan)">--</span></div>
+        <div class="sr"><span class="sl">拉取</span><span class="sv" id="v-pull">--</span></div>
+        <div class="sr"><span class="sl">推送</span><span class="sv" id="v-push">--</span></div>
     </div>
 
     <!-- B: TERMINAL -->
     <div class="panel span-row">
-        <div class="pt">&#9672; <span>LIVE TERMINAL</span></div>
+        <div class="pt">&#9672; <span>即時終端機</span></div>
         <div class="term" id="term"></div>
     </div>
 
     <!-- C: OPERATIONS -->
     <div class="panel">
-        <div class="pt">&#9672; <span>OPERATIONS</span></div>
+        <div class="pt">&#9672; <span>戰術操作</span></div>
         <div class="bg">
-            <button class="cb" onclick="logMsg('OK','Health Check triggered')">&#9889; Health Check</button>
-            <button class="cb" onclick="logMsg('OK','Scout signal sent')">&#128270; Market Scout</button>
-            <button class="cb" onclick="logMsg('OK','Git Pull triggered')">&#11015; Git Pull</button>
-            <button class="cb" onclick="logMsg('OK','Git Push triggered')">&#11014; Git Push</button>
-            <button class="cb" onclick="location.reload()">&#128260; Refresh HUD</button>
-            <button class="cb red" onclick="logMsg('ERR','SOS Protocol!')">&#127384; SOS</button>
+            <button class="cb" onclick="logMsg('OK','健康檢查已觸發')">&#9889; 健康檢查</button>
+            <button class="cb" onclick="logMsg('OK','偵察信號已發射')">&#128270; 市場偵察</button>
+            <button class="cb" onclick="logMsg('OK','Git 拉取已觸發')">&#11015; Git 拉取</button>
+            <button class="cb" onclick="logMsg('OK','Git 推送已觸發')">&#11014; Git 推送</button>
+            <button class="cb" onclick="location.reload()">&#128260; 刷新戰情室</button>
+            <button class="cb red" onclick="logMsg('ERR','緊急協議啟動！')">&#127384; 緊急警報</button>
         </div>
         <div style="margin-top:auto;padding-top:10px;border-top:1px solid #0d2a30">
             <div style="font-size:0.55rem;color:#334;line-height:1.8;letter-spacing:1px">
-                &gt; ZP. Principal<br>
+                &gt; 總指揮 ZP. Principal<br>
                 &gt; Antigravity v6.6<br>
                 &gt; naruto6485-cloud/ping
             </div>
@@ -199,29 +199,29 @@
 
     <!-- D: DOCKER -->
     <div class="panel">
-        <div class="pt">&#9672; <span>DOCKER FLEET</span></div>
-        <div id="docker-list"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">Waiting...</div></div>
+        <div class="pt">&#9672; <span>DOCKER 艦隊</span></div>
+        <div id="docker-list"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">等待中...</div></div>
         <div style="margin-top:auto;padding-top:10px;border-top:1px solid #0d2a30">
-            <div class="bm"><div class="bv ok" id="v-container-count">--</div><div class="bl">CONTAINERS</div></div>
+            <div class="bm"><div class="bv ok" id="v-container-count">--</div><div class="bl">容器數量</div></div>
         </div>
     </div>
 
     <!-- E: GIT LOG -->
     <div class="panel">
-        <div class="pt">&#9672; <span>GIT LOG</span></div>
-        <div id="git-commits"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">Waiting...</div></div>
+        <div class="pt">&#9672; <span>GIT 交戰紀錄</span></div>
+        <div id="git-commits"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">等待中...</div></div>
         <div style="margin-top:12px;border-top:1px solid #0d2a30;padding-top:8px" id="git-extras"></div>
     </div>
 
 </main>
 
 <footer>
-    <div>PING WAR ROOM v3.0</div>
+    <div>PING 戰情室 v3.0</div>
     <div class="fs">
-        <div class="fi" id="f-disk">DISK: <span>--</span></div>
-        <div class="fi" id="f-docker">DOCKER: <span>--</span></div>
-        <div class="fi" id="f-n8n">N8N: <span>--</span></div>
-        <div class="fi" id="f-git">GIT: <span>--</span></div>
+        <div class="fi" id="f-disk">磁碟: <span>--</span></div>
+        <div class="fi" id="f-docker">Docker: <span>--</span></div>
+        <div class="fi" id="f-n8n">n8n: <span>--</span></div>
+        <div class="fi" id="f-git">Git: <span>--</span></div>
     </div>
     <div id="footer-time"></div>
 </footer>
@@ -259,11 +259,11 @@ function loadStatus(){
     else{ageEl.textContent=`${ageMin}m ago (STALE)`;ageEl.style.color='#a00';dotEl.className='refresh-dot stale';}
 
     const dEl=document.getElementById('v-disk');
-    dEl.textContent=`${S.disk.freeGB} GB FREE`;dEl.className=`sv ${sc(S.disk.status)}`;
+    dEl.textContent=`${S.disk.freeGB} GB 剩餘`;dEl.className=`sv ${sc(S.disk.status)}`;
     document.getElementById('v-disk-bar').style.width=`${S.disk.usedPct||37}%`;
 
     const nEl=document.getElementById('v-n8n');
-    nEl.innerHTML=S.n8n.status==='ONLINE'?`<span class="pulse">&#9679;</span> ONLINE :${S.n8n.port}`:`&#9679; OFFLINE`;
+    nEl.innerHTML=S.n8n.status==='ONLINE'?`<span class="pulse">&#9679;</span> 線上 :${S.n8n.port}`:`&#9679; 離線`;
     nEl.className=`sv ${sc(S.n8n.status)}`;
 
     const dcEl=document.getElementById('v-docker');
@@ -282,7 +282,7 @@ function loadStatus(){
     document.getElementById('v-branch').innerHTML=`${S.git.branch} <span style="color:#0a5">&#10003;</span>`;
     document.getElementById('v-branch').className='sv ok';
     const gsEl=document.getElementById('v-gitstatus');
-    gsEl.textContent=S.git.status==='CLEAN'?'CLEAN':`DIRTY (${S.git.dirty.length})`;
+    gsEl.textContent=S.git.status==='CLEAN'?'已同步':`未提交 (${S.git.dirty.length})`;
     gsEl.className=`sv ${S.git.status==='CLEAN'?'ok':'warn'}`;
     document.getElementById('v-lastsync').textContent=S.timestamp;
     document.getElementById('v-pull').textContent=S.pull.status;
@@ -296,18 +296,18 @@ function loadStatus(){
             `<div class="cm"><span class="ch">${c.hash}</span><span class="cmsg">${c.msg}</span></div>`
         ).join('');
     }
-    document.getElementById('git-extras').innerHTML=`<div class="sr"><span class="sl">Remote</span><span class="sv" style="color:#559;font-size:0.65rem">${S.git.remote}</span></div>`;
+    document.getElementById('git-extras').innerHTML=`<div class="sr"><span class="sl">遠端</span><span class="sv" style="color:#559;font-size:0.65rem">${S.git.remote}</span></div>`;
 
     document.querySelector('#f-disk span').textContent=`${S.disk.freeGB}GB`;
-    document.querySelector('#f-docker span').textContent=`${S.docker.containers.length} UP`;
-    document.querySelector('#f-n8n span').textContent=S.n8n.status;
+    document.querySelector('#f-docker span').textContent=`${S.docker.containers.length} 運行`;
+    document.querySelector('#f-n8n span').textContent=S.n8n.status==='ONLINE'?'線上':'離線';
     if(S.n8n.status!=='ONLINE') document.getElementById('f-n8n').className='fi err';
-    document.querySelector('#f-git span').textContent=S.git.status==='CLEAN'?'SYNCED':'DIRTY';
+    document.querySelector('#f-git span').textContent=S.git.status==='CLEAN'?'已同步':'未提交';
 
-    logMsg('OK',`Data loaded: ${S.timestamp}`);
+    logMsg('OK',`數據載入: ${S.timestamp}`);
     S.docker.containers.forEach(c=>logMsg('OK',`Docker: ${c.name} - ${c.status}`));
-    logMsg(S.n8n.status==='ONLINE'?'OK':'ERR',`n8n: ${S.n8n.status} :${S.n8n.port}`);
-    logMsg(sc(S.git.status)==='ok'?'OK':'WARN',`Git: ${S.git.branch} - ${S.git.status}`);
+    logMsg(S.n8n.status==='ONLINE'?'OK':'ERR',`n8n: ${S.n8n.status==='ONLINE'?'線上':'離線'} :${S.n8n.port}`);
+    logMsg(sc(S.git.status)==='ok'?'OK':'WARN',`Git: ${S.git.branch} - ${S.git.status==='CLEAN'?'已同步':'未提交'}`);
 }
 
 function logMsg(level,msg){
@@ -321,7 +321,7 @@ function logMsg(level,msg){
     term.appendChild(p);term.scrollTop=term.scrollHeight;
 }
 
-const beats=['Heartbeat OK','Neural Core standby','Docker fleet healthy','Git remote OK','n8n standby'];
+const beats=['心跳正常','神經核心待命','Docker 艦隊健康','Git 遠端正常','n8n 待命中'];
 let bi=0;
 setInterval(()=>{logMsg('OK',beats[bi]);bi=(bi+1)%beats.length},45000);
 
@@ -333,9 +333,9 @@ setInterval(()=>{
     document.head.appendChild(s);
 },30000);
 
-logMsg('OK','PING WAR ROOM v3.0 initializing...');
+logMsg('OK','PING 戰情室 v3.0 啟動中...');
 loadStatus();
-logMsg('OK','Dashboard ready. Auto-refresh 30s.');
+logMsg('OK','儀表板就緒。每 30 秒自動刷新。');
 </script>
 </body>
 </html>
