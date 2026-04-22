@@ -1,341 +1,108 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PING 戰情室 | 即時儀表板</title>
-    <meta name="description" content="PING 帝國戰情室 - 即時系統監控儀表板">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🎯</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>PING Imperial Monitor</title>
     <style>
-        :root {
-            --bg:#020c0e; --cyan:#00f0ff; --green:#00ff73; --red:#ff003c;
-            --yellow:#ffe600; --dim:#004d5c; --panel:rgba(0,20,30,0.75);
-            --border:rgba(0,240,255,0.25);
-        }
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{
-            background:var(--bg);color:var(--cyan);
-            font-family:'Share Tech Mono',monospace;
-            min-height:100vh;overflow-x:hidden;
-            background-image:
-                radial-gradient(ellipse at 20% 50%,rgba(0,80,100,0.15) 0%,transparent 60%),
-                radial-gradient(ellipse at 80% 20%,rgba(0,60,80,0.1) 0%,transparent 50%);
-        }
-
-        /* HEADER */
-        header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;
-            border-bottom:1px solid var(--border);background:rgba(0,10,15,0.9);backdrop-filter:blur(6px);
-            position:sticky;top:0;z-index:100}
-        .logo{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;letter-spacing:3px;
-            color:var(--cyan);text-shadow:0 0 16px var(--cyan)}
-        .logo span{color:var(--green)}
-        #live-clock{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;
-            color:var(--green);text-shadow:0 0 12px rgba(0,255,115,0.8)}
-        #live-date{font-size:0.65rem;color:#558;letter-spacing:2px}
-        #data-age{font-size:0.55rem;color:#335;margin-top:2px}
-
-        /* MAIN - responsive */
-        main{display:grid;gap:10px;padding:10px}
-
-        /* Desktop: 3-column */
-        @media(min-width:900px){
-            body{height:100vh;overflow:hidden;display:grid;grid-template-rows:56px 1fr 42px}
-            main{grid-template-columns:1.1fr 1.6fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden}
-            .span-row{grid-row:span 2}
-        }
-        /* Mobile: single column */
-        @media(max-width:899px){
-            main{grid-template-columns:1fr}
-            .panel{max-height:400px}
-        }
-
-        /* PANEL */
-        .panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;
-            padding:14px 16px;display:flex;flex-direction:column;position:relative;
-            overflow:hidden;backdrop-filter:blur(4px)}
-        .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-            background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.5}
-        .pt{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:3px;
-            color:#558;margin-bottom:10px;text-transform:uppercase}
-        .pt span{color:var(--cyan)}
-
-        /* STATUS ROWS */
-        .sr{display:flex;justify-content:space-between;align-items:center;
-            padding:5px 0;border-bottom:1px solid rgba(0,240,255,0.07);font-size:0.78rem}
-        .sr:last-child{border-bottom:none}
-        .sl{color:#557} .sv{font-weight:bold}
-        .ok{color:var(--green);text-shadow:0 0 8px rgba(0,255,115,0.6)}
-        .warn{color:var(--yellow);text-shadow:0 0 8px rgba(255,230,0,0.6)}
-        .err{color:var(--red);text-shadow:0 0 8px rgba(255,0,60,0.6)}
-        .pulse{animation:pulse 2s infinite}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
-        /* BIG METRIC */
-        .bm{text-align:center;padding:10px 0;flex:1;display:flex;flex-direction:column;
-            align-items:center;justify-content:center}
-        .bv{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1}
-        .bl{font-size:0.6rem;letter-spacing:2px;color:#447;margin-top:6px}
-
-        /* CONTAINER ROW */
-        .cr{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:6px;
-            background:rgba(0,40,55,0.5);border:1px solid rgba(0,240,255,0.1);
-            border-radius:3px;font-size:0.75rem}
-        .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;
-            box-shadow:0 0 6px var(--green);animation:blink 1.5s infinite}
-        .dot.on{background:var(--green)}
-        .dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-        .cn{color:var(--cyan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .cp{color:#447;font-size:0.65rem} .ut{font-size:0.65rem}
-
-        /* TERMINAL */
-        .term{flex:1;background:rgba(0,0,0,0.7);border:1px solid #0d2a30;border-radius:3px;
-            padding:10px 12px;overflow-y:auto;font-size:0.72rem;line-height:1.6;
-            scrollbar-width:thin;scrollbar-color:var(--dim) transparent;min-height:180px}
-        .tt{color:#335} .tok{color:var(--green)} .twn{color:var(--yellow)}
-        .ter{color:var(--red)} .tin{color:var(--cyan)}
-
-        /* COMMIT */
-        .cm{display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,240,255,0.06);
-            font-size:0.7rem;align-items:flex-start}
-        .ch{color:var(--yellow);flex-shrink:0;font-family:'Share Tech Mono',monospace}
-        .cmsg{color:#99a;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-        /* PROGRESS BAR */
-        .bw{background:#0a1a1f;border-radius:2px;height:6px;margin:4px 0;overflow:hidden}
-        .bf{height:100%;border-radius:2px;transition:width 1s ease}
-
-        /* BUTTONS */
-        .bg{display:flex;flex-direction:column;gap:7px;margin-top:6px}
-        .cb{background:transparent;border:1px solid var(--dim);color:var(--cyan);
-            font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:8px 12px;
-            text-align:left;cursor:pointer;letter-spacing:1px;transition:all 0.2s;border-radius:2px}
-        .cb:hover,.cb:active{border-color:var(--cyan);background:rgba(0,240,255,0.08);
-            box-shadow:0 0 10px rgba(0,240,255,0.15);transform:translateX(3px)}
-        .cb.red{border-color:#3a0010;color:var(--red)}
-        .cb.red:hover,.cb.red:active{border-color:var(--red);background:rgba(255,0,60,0.08)}
-
-        .span-row{grid-row:span 2}
-
-        /* FOOTER */
-        footer{display:flex;align-items:center;justify-content:space-between;
-            padding:0 20px;border-top:1px solid var(--border);background:rgba(0,5,8,0.95);
-            font-size:0.6rem;color:#334;letter-spacing:2px;min-height:42px;flex-wrap:wrap;gap:8px}
-        .fs{display:flex;gap:14px;flex-wrap:wrap}
-        .fi span{color:var(--green)}
-        .fi.err span{color:var(--red)}
-
-        /* SCANLINE */
-        body::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;
-            background:repeating-linear-gradient(0deg,transparent,transparent 2px,
-            rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:999}
-
-        .refresh-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-left:6px}
-        .refresh-dot.live{background:var(--green);animation:blink 1s infinite}
-        .refresh-dot.stale{background:var(--red)}
-
-        /* Mobile adjustments */
-        @media(max-width:899px){
-            .logo{font-size:0.85rem;letter-spacing:2px}
-            #live-clock{font-size:1rem}
-            .sr{font-size:0.72rem}
-            footer{font-size:0.55rem;padding:8px 12px}
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #00ff00; padding: 20px; }
+        h1 { color: #magenta; border-bottom: 2px solid #magenta; }
+        .log-entry { background: #1a1a1a; border: 1px solid #333; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+        .file-name { color: #00ffff; font-weight: bold; }
+        pre { white-space: pre-wrap; word-wrap: break-word; color: #cccccc; }
     </style>
 </head>
 <body>
+    <h1>? PING SOVEREIGN MONITOR</h1>
+    <p>Last Update: 04/22/2026 10:06:02</p>    <div class="log-entry">
+        <div class="file-name">imperial_maintenance.log</div>
+        <pre>--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.2) --- 04/21/2026 14:35:39
+--- IMPERIAL MAINTENANCE COMPLETE (v2.1.2) --- 04/21/2026 14:38:48
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.3) --- 04/21/2026 14:44:35
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.7) --- 04/22/2026 09:40:42
+--- IMPERIAL MAINTENANCE COMPLETE (v2.1.7) --- 04/22/2026 09:41:37
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.9) --- 04/22/2026 09:55:20
+--- IMPERIAL MAINTENANCE COMPLETE (v2.1.9) --- 04/22/2026 09:55:44
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.11) --- 04/22/2026 09:57:33
+--- IMPERIAL MAINTENANCE COMPLETE (v2.1.11) --- 04/22/2026 09:57:54
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.16) --- 04/22/2026 10:03:28
+--- IMPERIAL SOVEREIGN MAINTENANCE INITIATED (v2.1.18) --- 04/22/2026 10:05:40
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">watcher.log.err</div>
+        <pre>node:internal/modules/cjs/loader:1459
+  throw err;
+  ^
 
-<header>
-    <div class="logo">PING <span>戰情室</span> <div class="refresh-dot live" id="refresh-dot"></div></div>
-    <div style="text-align:right">
-        <div id="live-clock">--:--:--</div>
-        <div id="live-date">載入中...</div>
-        <div id="data-age"></div>
-    </div>
-</header>
-
-<main>
-
-    <!-- A: VITALS -->
-    <div class="panel">
-        <div class="pt">&#9672; <span>系統生命徵象</span></div>
-        <div class="sr"><span class="sl">磁碟 (C:)</span><span class="sv ok" id="v-disk">-- GB 剩餘</span></div>
-        <div class="bw"><div class="bf" id="v-disk-bar" style="width:0%;background:linear-gradient(90deg,#00ff73,#00c055)"></div></div>
-        <div class="sr"><span class="sl">n8n 服務</span><span class="sv" id="v-n8n">--</span></div>
-        <div class="sr"><span class="sl">Docker 艦隊</span><span class="sv" id="v-docker">--</span></div>
-        <div class="sr"><span class="sl">分支</span><span class="sv" id="v-branch">--</span></div>
-        <div class="sr"><span class="sl">Git 狀態</span><span class="sv" id="v-gitstatus">--</span></div>
-        <div class="sr"><span class="sl">最後同步</span><span class="sv" id="v-lastsync" style="color:var(--cyan)">--</span></div>
-        <div class="sr"><span class="sl">拉取</span><span class="sv" id="v-pull">--</span></div>
-        <div class="sr"><span class="sl">推送</span><span class="sv" id="v-push">--</span></div>
-    </div>
-
-    <!-- B: TERMINAL -->
-    <div class="panel span-row">
-        <div class="pt">&#9672; <span>即時終端機</span></div>
-        <div class="term" id="term"></div>
-    </div>
-
-    <!-- C: OPERATIONS -->
-    <div class="panel">
-        <div class="pt">&#9672; <span>戰術操作</span></div>
-        <div class="bg">
-            <button class="cb" onclick="logMsg('OK','健康檢查已觸發')">&#9889; 健康檢查</button>
-            <button class="cb" onclick="logMsg('OK','偵察信號已發射')">&#128270; 市場偵察</button>
-            <button class="cb" onclick="logMsg('OK','Git 拉取已觸發')">&#11015; Git 拉取</button>
-            <button class="cb" onclick="logMsg('OK','Git 推送已觸發')">&#11014; Git 推送</button>
-            <button class="cb" onclick="location.reload()">&#128260; 刷新戰情室</button>
-            <button class="cb red" onclick="logMsg('ERR','緊急協議啟動！')">&#127384; 緊急警報</button>
-        </div>
-        <div style="margin-top:auto;padding-top:10px;border-top:1px solid #0d2a30">
-            <div style="font-size:0.55rem;color:#334;line-height:1.8;letter-spacing:1px">
-                &gt; 總指揮 ZP. Principal<br>
-                &gt; Antigravity v6.6<br>
-                &gt; naruto6485-cloud/ping
-            </div>
-        </div>
-    </div>
-
-    <!-- D: DOCKER -->
-    <div class="panel">
-        <div class="pt">&#9672; <span>DOCKER 艦隊</span></div>
-        <div id="docker-list"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">等待中...</div></div>
-        <div style="margin-top:auto;padding-top:10px;border-top:1px solid #0d2a30">
-            <div class="bm"><div class="bv ok" id="v-container-count">--</div><div class="bl">容器數量</div></div>
-        </div>
-    </div>
-
-    <!-- E: GIT LOG -->
-    <div class="panel">
-        <div class="pt">&#9672; <span>GIT 交戰紀錄</span></div>
-        <div id="git-commits"><div style="color:#335;font-size:0.7rem;padding:16px;text-align:center">等待中...</div></div>
-        <div style="margin-top:12px;border-top:1px solid #0d2a30;padding-top:8px" id="git-extras"></div>
-    </div>
-
-</main>
-
-<footer>
-    <div>PING 戰情室 v3.0</div>
-    <div class="fs">
-        <div class="fi" id="f-disk">磁碟: <span>--</span></div>
-        <div class="fi" id="f-docker">Docker: <span>--</span></div>
-        <div class="fi" id="f-n8n">n8n: <span>--</span></div>
-        <div class="fi" id="f-git">Git: <span>--</span></div>
-    </div>
-    <div id="footer-time"></div>
-</footer>
-
-<script src="status_data.js"></script>
-<script>
-function updateClock(){
-    const n=new Date(),h=String(n.getHours()).padStart(2,'0'),
-        m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');
-    document.getElementById('live-clock').textContent=`${h}:${m}:${s}`;
-    document.getElementById('live-date').textContent=
-        n.toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'});
-    document.getElementById('footer-time').textContent=`${h}:${m}:${s} CST`;
-}
-setInterval(updateClock,1000);updateClock();
-
-function sc(s){
-    if(s==='OK'||s==='ONLINE'||s==='RUNNING'||s==='CLEAN'||s==='UP_TO_DATE') return 'ok';
-    if(s==='WARNING'||s==='DIRTY'||s==='WARN'||s==='SKIP'||s==='EMPTY') return 'warn';
-    return 'err';
+Error: Cannot find module 'D:\PING_ASSETS_HUB\scripts\send_to_line.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1071:22)
+    at Module._load (node:internal/modules/cjs/loader:1242:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
 }
 
-function loadStatus(){
-    if(typeof PING_STATUS==='undefined'){
-        logMsg('WARN','status_data.js not found. Run health check first.');
-        return;
-    }
-    const S=PING_STATUS;
-    const dataTime=new Date(S.timestamp.replace(' ','T'));
-    const ageMin=Math.round((Date.now()-dataTime.getTime())/60000);
-    const ageEl=document.getElementById('data-age');
-    const dotEl=document.getElementById('refresh-dot');
-    if(ageMin<=10){ageEl.textContent=`${ageMin}m ago (LIVE)`;ageEl.style.color='#0a5';dotEl.className='refresh-dot live';}
-    else if(ageMin<=60){ageEl.textContent=`${ageMin}m ago`;ageEl.style.color='#aa0';dotEl.className='refresh-dot live';}
-    else{ageEl.textContent=`${ageMin}m ago (STALE)`;ageEl.style.color='#a00';dotEl.className='refresh-dot stale';}
+Node.js v24.14.0
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">watcher.log</div>
+        <pre>--- PING Proactive Watcher v2.0 ACTIVE ---
+Watching: D:\PING_ASSETS_HUB\SENSING_TARGET via Polling Stage...
+[PROACTIVE] Hub detected: .gitkeep
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">server.log.err</div>
+        <pre>  ^
 
-    const dEl=document.getElementById('v-disk');
-    dEl.textContent=`${S.disk.freeGB} GB 剩餘`;dEl.className=`sv ${sc(S.disk.status)}`;
-    document.getElementById('v-disk-bar').style.width=`${S.disk.usedPct||37}%`;
-
-    const nEl=document.getElementById('v-n8n');
-    nEl.innerHTML=S.n8n.status==='ONLINE'?`<span class="pulse">&#9679;</span> 線上 :${S.n8n.port}`:`&#9679; 離線`;
-    nEl.className=`sv ${sc(S.n8n.status)}`;
-
-    const dcEl=document.getElementById('v-docker');
-    dcEl.textContent=`${S.docker.status} (${S.docker.containers.length})`;
-    dcEl.className=`sv ${sc(S.docker.status)}`;
-    document.getElementById('v-container-count').textContent=S.docker.containers.length;
-
-    const dList=document.getElementById('docker-list');
-    if(S.docker.containers.length>0){
-        dList.innerHTML=S.docker.containers.map(c=>{
-            const isUp=c.status.toLowerCase().includes('up');
-            return `<div class="cr"><div class="dot ${isUp?'on':'off'}"></div><div><div class="cn">${c.name}</div><div class="cp">${c.ports||'no ports'}</div></div><div class="ut ${isUp?'ok':'err'}">${c.status}</div></div>`;
-        }).join('');
-    }
-
-    document.getElementById('v-branch').innerHTML=`${S.git.branch} <span style="color:#0a5">&#10003;</span>`;
-    document.getElementById('v-branch').className='sv ok';
-    const gsEl=document.getElementById('v-gitstatus');
-    gsEl.textContent=S.git.status==='CLEAN'?'已同步':`未提交 (${S.git.dirty.length})`;
-    gsEl.className=`sv ${S.git.status==='CLEAN'?'ok':'warn'}`;
-    document.getElementById('v-lastsync').textContent=S.timestamp;
-    document.getElementById('v-pull').textContent=S.pull.status;
-    document.getElementById('v-pull').className=`sv ${sc(S.pull.status)}`;
-    document.getElementById('v-push').textContent=S.push.status;
-    document.getElementById('v-push').className=`sv ${sc(S.push.status)}`;
-
-    const gcEl=document.getElementById('git-commits');
-    if(S.git.commits.length>0){
-        gcEl.innerHTML=S.git.commits.map(c=>
-            `<div class="cm"><span class="ch">${c.hash}</span><span class="cmsg">${c.msg}</span></div>`
-        ).join('');
-    }
-    document.getElementById('git-extras').innerHTML=`<div class="sr"><span class="sl">遠端</span><span class="sv" style="color:#559;font-size:0.65rem">${S.git.remote}</span></div>`;
-
-    document.querySelector('#f-disk span').textContent=`${S.disk.freeGB}GB`;
-    document.querySelector('#f-docker span').textContent=`${S.docker.containers.length} 運行`;
-    document.querySelector('#f-n8n span').textContent=S.n8n.status==='ONLINE'?'線上':'離線';
-    if(S.n8n.status!=='ONLINE') document.getElementById('f-n8n').className='fi err';
-    document.querySelector('#f-git span').textContent=S.git.status==='CLEAN'?'已同步':'未提交';
-
-    logMsg('OK',`數據載入: ${S.timestamp}`);
-    S.docker.containers.forEach(c=>logMsg('OK',`Docker: ${c.name} - ${c.status}`));
-    logMsg(S.n8n.status==='ONLINE'?'OK':'ERR',`n8n: ${S.n8n.status==='ONLINE'?'線上':'離線'} :${S.n8n.port}`);
-    logMsg(sc(S.git.status)==='ok'?'OK':'WARN',`Git: ${S.git.branch} - ${S.git.status==='CLEAN'?'已同步':'未提交'}`);
+Error: Cannot find module './skills/generate_status'
+Require stack:
+- D:\PING_ASSETS_HUB\02_BRAIN_SCRIPTS\neural_webhook_bridge.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1071:22)
+    at Module._load (node:internal/modules/cjs/loader:1242:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1556:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (D:\PING_ASSETS_HUB\02_BRAIN_SCRIPTS\neural_webhook_bridge.js:454:38)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'D:\\PING_ASSETS_HUB\\02_BRAIN_SCRIPTS\\neural_webhook_bridge.js' ]
 }
 
-function logMsg(level,msg){
-    const n=new Date(),
-        t=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-    const cls=level==='OK'?'tok':level==='WARN'?'twn':'ter';
-    const tag=level==='OK'?'[OK]':level==='WARN'?'[!!]':'[ERR]';
-    const term=document.getElementById('term');
-    const p=document.createElement('p');
-    p.innerHTML=`<span class="tt">[${t}]</span> <span class="${cls}">${tag}</span> ${msg}`;
-    term.appendChild(p);term.scrollTop=term.scrollHeight;
-}
-
-const beats=['心跳正常','神經核心待命','Docker 艦隊健康','Git 遠端正常','n8n 待命中'];
-let bi=0;
-setInterval(()=>{logMsg('OK',beats[bi]);bi=(bi+1)%beats.length},45000);
-
-setInterval(()=>{
-    const s=document.createElement('script');
-    s.src='status_data.js?t='+Date.now();
-    s.onload=()=>{loadStatus();s.remove()};
-    s.onerror=()=>{s.remove()};
-    document.head.appendChild(s);
-},30000);
-
-logMsg('OK','PING 戰情室 v3.0 啟動中...');
-loadStatus();
-logMsg('OK','儀表板就緒。每 30 秒自動刷新。');
-</script>
-</body>
-</html>
+Node.js v24.14.0
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">server.log</div>
+        <pre>??injected env (0) from ..\.env // tip: ??encrypted .env [www.dotenvx.com]
+??injected env (0) from .env // tip: ??auth for agents [www.vestauth.com]
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">brain.log.err</div>
+        <pre>+                                          ~
+陳述式區塊或類型定義中缺少 '}'。
+位於 D:\PING_ASSETS_HUB\scripts\A-Evolve_Brain.ps1:24 字元:35
++         if (Test-Path $inboxPath) {
++                                   ~
+陳述式區塊或類型定義中缺少 '}'。
+位於 D:\PING_ASSETS_HUB\scripts\A-Evolve_Brain.ps1:23 字元:9
++     try {
++         ~
+陳述式區塊或類型定義中缺少 '}'。
+位於 D:\PING_ASSETS_HUB\scripts\A-Evolve_Brain.ps1:102 字元:1
++ 
+Try 陳述式遺漏 Catch 區塊或 Finally 區塊。
+位於 D:\PING_ASSETS_HUB\scripts\A-Evolve_Brain.ps1:22 字元:15
++ while ($true) {
++               ~
+陳述式區塊或類型定義中缺少 '}'。
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : TerminatorExpectedAtEndOfString
+ 
+</pre>
+    </div>    <div class="log-entry">
+        <div class="file-name">brain.log</div>
+        <pre></pre>
+    </div></body></html>
